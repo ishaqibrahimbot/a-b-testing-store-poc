@@ -1,0 +1,27 @@
+{
+  "experiments": {
+    "add-to-cart-button": {
+      "id": "add-to-cart-button",
+      "name": "Add to Cart Button Test",
+      "description": "Testing different button colors and text for conversion optimization",
+      "status": "active",
+      "traffic_allocation": 50,
+      "variants": {
+        "A": {
+          "name": "control",
+          "button_color": "green",
+          "button_text": "Add to Cart",
+          "description": "Original green button with 'Add to Cart' text"
+        },
+        "B": {
+          "name": "treatment",
+          "button_color": "blue",
+          "button_text": "Purchase Now",
+          "description": "Blue button with 'Purchase Now' text"
+        }
+      },
+      "cookie_name": "ab_cart_button",
+      "cookie_duration_days": 30
+    }
+  }
+}

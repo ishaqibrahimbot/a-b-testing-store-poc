@@ -1,0 +1,128 @@
+{
+  "siteConfig": {
+    "name": "A/B Store",
+    "logo": {
+      "text": "A/B Store",
+      "image": null
+    },
+    "tagline": "Demonstrating A/B testing in e-commerce",
+    "lastUpdated": "2024-01-15T10:00:00Z"
+  },
+  "header": {
+    "navigation": [
+      {
+        "id": "products",
+        "label": "Products",
+        "href": "/products",
+        "isActive": true
+      },
+      {
+        "id": "categories",
+        "label": "Categories",
+        "href": "/categories",
+        "isActive": true
+      },
+      {
+        "id": "about",
+        "label": "About",
+        "href": "/about",
+        "isActive": true
+      }
+    ],
+    "actions": {
+      "search": {
+        "enabled": true,
+        "placeholder": "Search products..."
+      },
+      "cart": {
+        "enabled": true,
+        "showCount": true
+      }
+    },
+    "lastUpdated": "2024-01-15T10:00:00Z"
+  },
+  "footer": {
+    "sections": [
+      {
+        "id": "company",
+        "title": "A/B Store",
+        "type": "description",
+        "content": "Demonstrating A/B testing in e-commerce with Next.js 15 and Partial Pre-Rendering."
+      },
+      {
+        "id": "shop",
+        "title": "Shop",
+        "type": "links",
+        "links": [
+          {
+            "label": "All Products",
+            "href": "/products"
+          },
+          {
+            "label": "Electronics",
+            "href": "/categories/electronics"
+          },
+          {
+            "label": "Footwear",
+            "href": "/categories/footwear"
+          },
+          {
+            "label": "Wearables",
+            "href": "/categories/wearables"
+          }
+        ]
+      },
+      {
+        "id": "support",
+        "title": "Support",
+        "type": "links",
+        "links": [
+          {
+            "label": "Contact Us",
+            "href": "/contact"
+          },
+          {
+            "label": "Shipping Info",
+            "href": "/shipping"
+          },
+          {
+            "label": "Returns",
+            "href": "/returns"
+          },
+          {
+            "label": "FAQ",
+            "href": "/faq"
+          }
+        ]
+      },
+      {
+        "id": "connect",
+        "title": "Connect",
+        "type": "links",
+        "links": [
+          {
+            "label": "Newsletter",
+            "href": "/newsletter"
+          },
+          {
+            "label": "Twitter",
+            "href": "https://twitter.com"
+          },
+          {
+            "label": "Instagram",
+            "href": "https://instagram.com"
+          },
+          {
+            "label": "GitHub",
+            "href": "https://github.com"
+          }
+        ]
+      }
+    ],
+    "copyright": {
+      "year": 2024,
+      "text": "A/B Store. Built with Next.js 15 for A/B testing demonstration."
+    },
+    "lastUpdated": "2024-01-15T10:00:00Z"
+  }
+}

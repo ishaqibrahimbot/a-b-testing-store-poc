@@ -1,0 +1,69 @@
+{
+  "products": [
+    {
+      "id": "1",
+      "slug": "wireless-headphones",
+      "name": "Premium Wireless Headphones",
+      "description": "Experience crystal-clear audio with our premium wireless headphones. Featuring active noise cancellation, 30-hour battery life, and premium comfort padding for all-day listening.",
+      "images": [
+        "/images/headphones-main.jpg",
+        "/images/headphones-side.jpg",
+        "/images/headphones-case.jpg"
+      ],
+      "category": "Electronics",
+      "brand": "AudioTech",
+      "features": [
+        "Active Noise Cancellation",
+        "30-hour battery life",
+        "Bluetooth 5.2",
+        "Premium comfort padding",
+        "Touch controls"
+      ]
+    },
+    {
+      "id": "2",
+      "slug": "running-shoes",
+      "name": "Ultra Boost Running Shoes",
+      "description": "Engineered for performance with responsive cushioning and lightweight design. Perfect for daily runs, training, and everything in between.",
+      "images": [
+        "/images/shoes-main.jpg",
+        "/images/shoes-side.jpg",
+        "/images/shoes-sole.jpg"
+      ],
+      "category": "Footwear",
+      "brand": "SportMax",
+      "features": [
+        "Responsive cushioning",
+        "Lightweight design",
+        "Breathable mesh upper",
+        "Durable rubber outsole",
+        "Available in multiple colors"
+      ]
+    },
+    {
+      "id": "3",
+      "slug": "smart-watch",
+      "name": "Smart Fitness Watch",
+      "description": "Track your fitness goals with built-in GPS, heart rate monitoring, and 7-day battery life. Water resistant up to 50 meters.",
+      "images": [
+        "/images/watch-main.jpg",
+        "/images/watch-bands.jpg",
+        "/images/watch-apps.jpg"
+      ],
+      "category": "Wearables",
+      "brand": "TechFit",
+      "features": [
+        "Built-in GPS",
+        "Heart rate monitoring",
+        "7-day battery life",
+        "Water resistant (50m)",
+        "Multiple sport modes"
+      ]
+    }
+  ],
+  "recommendations": {
+    "wireless-headphones": ["smart-watch", "running-shoes"],
+    "running-shoes": ["smart-watch", "wireless-headphones"],
+    "smart-watch": ["wireless-headphones", "running-shoes"]
+  }
+}
