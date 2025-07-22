@@ -36,11 +36,12 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   const product = getProduct(params.slug);
 
   if (!product) {
@@ -60,7 +61,8 @@ export async function generateMetadata({
   };
 }
 
-export default function ProductPage({ params }: { params: { slug: string } }) {
+export default async function ProductPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const product = getProduct(params.slug);
 
   if (!product) {
