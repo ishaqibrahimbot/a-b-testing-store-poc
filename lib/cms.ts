@@ -1,4 +1,3 @@
-import cmsData from "../data/cms.json";
 import { unstable_cache } from "next/cache";
 
 export interface NavigationItem {
@@ -55,12 +54,37 @@ export interface SiteConfig {
   lastUpdated: string;
 }
 
+// Base URL for local data server
+const DATA_SERVER_URL = process.env.DATA_SERVER_URL || "http://localhost:3001";
+
+// Utility function to fetch from data server
+async function fetchFromDataServer(endpoint: string) {
+  const res = await fetch(`${DATA_SERVER_URL}${endpoint}`, {
+    cache: "no-store", // Always fetch fresh data
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch from data server: ${endpoint}`);
+  }
+
+  return res.json();
+}
+
 // Cached CMS data fetching with revalidation tags
 export const getCMSData = unstable_cache(
   async () => {
-    // In a real CMS, this would be an API call
-    // For now, we're using the JSON file but with cache tags for revalidation
-    return cmsData;
+    // Now fetching from local data server
+    const [headerData, footerData, siteConfig] = await Promise.all([
+      fetchFromDataServer("/header"),
+      fetchFromDataServer("/footer"),
+      fetchFromDataServer("/global"),
+    ]);
+
+    return {
+      header: headerData,
+      footer: footerData,
+      siteConfig: siteConfig,
+    };
   },
   ["cms-data"],
   {
@@ -84,7 +108,7 @@ export const getHeaderData = unstable_cache(
 export const getFooterData = unstable_cache(
   async (): Promise<FooterData> => {
     const data = await getCMSData();
-    return data.footer as FooterData;
+    return data.footer;
   },
   ["footer-data"],
   {

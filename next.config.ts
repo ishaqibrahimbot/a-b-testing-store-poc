@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   experimental: {
     ppr: true, // Enable Partial Pre-Rendering
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;

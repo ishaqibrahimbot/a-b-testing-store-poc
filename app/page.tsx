@@ -1,7 +1,46 @@
 import Link from "next/link";
-import productsData from "../data/products.json";
+import { unstable_cache } from "next/cache";
 
-export default function Home() {
+// Base URL for local data server
+const DATA_SERVER_URL = process.env.DATA_SERVER_URL || "http://localhost:3001";
+
+interface Product {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  category: string;
+}
+
+// Shared cached products data (same as product pages)
+const getProductsData = unstable_cache(
+  async () => {
+    const res = await fetch(`${DATA_SERVER_URL}/product`, {
+      cache: "force-cache", // Use cache for static generation
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch products");
+    }
+
+    return res.json();
+  },
+  ["products-data"],
+  {
+    tags: ["products"],
+    revalidate: 3600, // Cache for 1 hour
+  }
+);
+
+// Fetch products from data server
+async function getProducts() {
+  const data = await getProductsData();
+  return data.products;
+}
+
+export default async function Home() {
+  const products = await getProducts();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -35,7 +74,7 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {productsData.products.map((product) => (
+          {products.map((product: Product) => (
             <Link
               key={product.id}
               href={`/product/${product.slug}`}

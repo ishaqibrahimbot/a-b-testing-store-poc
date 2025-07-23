@@ -1,5 +1,4 @@
 import { cookies, headers } from "next/headers";
-import abExperiments from "../data/ab-experiments.json";
 
 export type ABVariant = "A" | "B";
 
@@ -24,7 +23,33 @@ export interface ABVariantConfig {
   description: string;
 }
 
+// Base URL for local data server
+const DATA_SERVER_URL = process.env.DATA_SERVER_URL || "http://localhost:3001";
+
+async function getExperiments() {
+  try {
+    const res = await fetch(`${DATA_SERVER_URL}/experiments`, {
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch experiments: ${res.status}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching experiments:", error);
+    return null;
+  }
+}
+
 export async function getABVariant(experimentId: string): Promise<ABVariant> {
+  const abExperiments = await getExperiments();
+
+  if (!abExperiments) {
+    return "A"; // Default to control variant
+  }
+
   const experiment = abExperiments.experiments[
     experimentId as keyof typeof abExperiments.experiments
   ] as ABExperiment;
@@ -54,7 +79,15 @@ export async function getABVariant(experimentId: string): Promise<ABVariant> {
   return "A";
 }
 
-export function getExperiment(experimentId: string): ABExperiment | null {
+export async function getExperiment(
+  experimentId: string
+): Promise<ABExperiment | null> {
+  const abExperiments = await getExperiments();
+
+  if (!abExperiments) {
+    return null;
+  }
+
   return (
     (abExperiments.experiments[
       experimentId as keyof typeof abExperiments.experiments
@@ -62,10 +95,26 @@ export function getExperiment(experimentId: string): ABExperiment | null {
   );
 }
 
-export function getVariantConfig(
+export async function getVariantConfig(
   experimentId: string,
   variant: ABVariant
-): ABVariantConfig | null {
-  const experiment = getExperiment(experimentId);
+): Promise<ABVariantConfig | null> {
+  const experiment = await getExperiment(experimentId);
   return experiment?.variants[variant] || null;
+}
+
+export async function getExperimentConfig(
+  experimentId: string
+): Promise<ABExperiment | null> {
+  const abExperiments = await getExperiments();
+
+  if (!abExperiments) {
+    return null;
+  }
+
+  const experiment = abExperiments.experiments[
+    experimentId as keyof typeof abExperiments.experiments
+  ] as ABExperiment;
+
+  return experiment || null;
 }

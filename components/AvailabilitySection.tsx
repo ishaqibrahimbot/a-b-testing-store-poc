@@ -36,7 +36,7 @@ export async function AvailabilitySection({ slug }: AvailabilitySectionProps) {
 
   // Get A/B test variant
   const variant = await getABVariant("add-to-cart-button");
-  const variantConfig = getVariantConfig("add-to-cart-button", variant);
+  const variantConfig = await getVariantConfig("add-to-cart-button", variant);
 
   const stockLevelColors = {
     high: "text-green-600",

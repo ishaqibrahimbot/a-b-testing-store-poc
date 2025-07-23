@@ -1,13 +1,11 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import productsData from "../../../data/products.json";
-import { ProductHeader } from "../../../components/ProductHeader";
+import { unstable_cache } from "next/cache";
 import { ProductGallery } from "../../../components/ProductGallery";
 import { ProductInfo } from "../../../components/ProductInfo";
 import { ProductDescription } from "../../../components/ProductDescription";
 import { AvailabilitySection } from "../../../components/AvailabilitySection";
 import { RecommendationsSection } from "../../../components/RecommendationsSection";
-import { ProductFooter } from "../../../components/ProductFooter";
 import { LoadingSkeleton } from "../../../components/LoadingSkeleton";
 
 // Enable PPR for this page
@@ -24,25 +22,48 @@ interface Product {
   features: string[];
 }
 
+// Base URL for local data server
+const DATA_SERVER_URL = process.env.DATA_SERVER_URL || "http://localhost:3001";
+
+// Cached products data fetching
+const getProductsData = unstable_cache(
+  async () => {
+    const res = await fetch(`${DATA_SERVER_URL}/product`, {
+      cache: "force-cache", // Use cache for static generation
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch products");
+    }
+
+    return res.json();
+  },
+  ["products-data"],
+  {
+    tags: ["products"],
+    revalidate: 3600, // Cache for 1 hour
+  }
+);
+
 // Static data fetching (will be pre-rendered)
-function getProduct(slug: string): Product | null {
-  return productsData.products.find((p) => p.slug === slug) || null;
+async function getProduct(slug: string): Promise<Product | null> {
+  const data = await getProductsData();
+  return data.products.find((p: Product) => p.slug === slug) || null;
 }
 
 // Generate static params for all products
 export async function generateStaticParams() {
-  return productsData.products.map((product) => ({
+  const data = await getProductsData();
+  return data.products.map((product: Product) => ({
     slug: product.slug,
   }));
 }
 
-export async function generateMetadata(
-  props: {
-    params: Promise<{ slug: string }>;
-  }
-) {
+export async function generateMetadata(props: {
+  params: Promise<{ slug: string }>;
+}) {
   const params = await props.params;
-  const product = getProduct(params.slug);
+  const product = await getProduct(params.slug);
 
   if (!product) {
     return {
@@ -61,9 +82,11 @@ export async function generateMetadata(
   };
 }
 
-export default async function ProductPage(props: { params: Promise<{ slug: string }> }) {
+export default async function ProductPage(props: {
+  params: Promise<{ slug: string }>;
+}) {
   const params = await props.params;
-  const product = getProduct(params.slug);
+  const product = await getProduct(params.slug);
 
   if (!product) {
     notFound();
@@ -71,10 +94,7 @@ export default async function ProductPage(props: { params: Promise<{ slug: strin
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Static header - pre-rendered */}
-      <ProductHeader />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Static product gallery - pre-rendered */}
           <ProductGallery images={product.images} name={product.name} />
@@ -102,10 +122,7 @@ export default async function ProductPage(props: { params: Promise<{ slug: strin
         <Suspense fallback={<LoadingSkeleton type="recommendations" />}>
           <RecommendationsSection slug={product.slug} />
         </Suspense>
-      </main>
-
-      {/* Static footer - pre-rendered */}
-      <ProductFooter />
+      </div>
     </div>
   );
 }

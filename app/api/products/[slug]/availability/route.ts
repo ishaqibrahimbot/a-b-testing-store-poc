@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Simulate database delay for demonstration
-const simulateDelay = () =>
-  new Promise((resolve) => setTimeout(resolve, 800 + Math.random() * 400));
+// Base URL for local data server
+const DATA_SERVER_URL = process.env.DATA_SERVER_URL || "http://localhost:3001";
 
 interface AvailabilityData {
   price: number;
@@ -14,67 +13,39 @@ interface AvailabilityData {
   lastUpdated: string;
 }
 
-// Mock availability data
-const mockAvailabilityData: Record<string, AvailabilityData> = {
-  "wireless-headphones": {
-    price: 199.99,
-    originalPrice: 249.99,
-    currency: "USD",
-    stock: 15,
-    isInStock: true,
-    stockLevel: "medium",
-    lastUpdated: new Date().toISOString(),
-  },
-  "running-shoes": {
-    price: 129.99,
-    currency: "USD",
-    stock: 3,
-    isInStock: true,
-    stockLevel: "low",
-    lastUpdated: new Date().toISOString(),
-  },
-  "smart-watch": {
-    price: 299.99,
-    originalPrice: 349.99,
-    currency: "USD",
-    stock: 25,
-    isInStock: true,
-    stockLevel: "high",
-    lastUpdated: new Date().toISOString(),
-  },
-};
-
-export async function GET(request: NextRequest, props: { params: Promise<{ slug: string }> }) {
+export async function GET(
+  request: NextRequest,
+  props: { params: Promise<{ slug: string }> }
+) {
   const params = await props.params;
   const { slug } = params;
 
-  // Simulate API delay
-  await simulateDelay();
+  try {
+    // Fetch from local data server
+    const res = await fetch(
+      `${DATA_SERVER_URL}/product/availability?slug=${slug}`,
+      {
+        cache: "no-store", // Always fetch fresh data
+      }
+    );
 
-  const availability = mockAvailabilityData[slug];
+    if (!res.ok) {
+      if (res.status === 404) {
+        return NextResponse.json(
+          { error: "Product not found" },
+          { status: 404 }
+        );
+      }
+      throw new Error(`Server responded with ${res.status}`);
+    }
 
-  if (!availability) {
-    return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    const availability = await res.json();
+    return NextResponse.json(availability);
+  } catch (error) {
+    console.error("Error fetching availability from data server:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch availability" },
+      { status: 500 }
+    );
   }
-
-  // Add some randomness to stock levels for demo purposes
-  const randomizedAvailability = {
-    ...availability,
-    stock: Math.max(0, availability.stock + Math.floor(Math.random() * 5) - 2),
-    lastUpdated: new Date().toISOString(),
-  };
-
-  // Update stock level based on current stock
-  if (randomizedAvailability.stock === 0) {
-    randomizedAvailability.stockLevel = "out";
-    randomizedAvailability.isInStock = false;
-  } else if (randomizedAvailability.stock <= 5) {
-    randomizedAvailability.stockLevel = "low";
-  } else if (randomizedAvailability.stock <= 15) {
-    randomizedAvailability.stockLevel = "medium";
-  } else {
-    randomizedAvailability.stockLevel = "high";
-  }
-
-  return NextResponse.json(randomizedAvailability);
 }
