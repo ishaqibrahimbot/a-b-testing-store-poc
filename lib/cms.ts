@@ -1,5 +1,3 @@
-import { unstable_cache } from "next/cache";
-
 export interface NavigationItem {
   id: string;
   label: string;
@@ -59,9 +57,7 @@ const DATA_SERVER_URL = process.env.DATA_SERVER_URL || "http://localhost:3001";
 
 // Utility function to fetch from data server
 async function fetchFromDataServer(endpoint: string) {
-  const res = await fetch(`${DATA_SERVER_URL}${endpoint}`, {
-    cache: "no-store", // Always fetch fresh data
-  });
+  const res = await fetch(`${DATA_SERVER_URL}${endpoint}`);
 
   if (!res.ok) {
     throw new Error(`Failed to fetch from data server: ${endpoint}`);
@@ -70,64 +66,20 @@ async function fetchFromDataServer(endpoint: string) {
   return res.json();
 }
 
-// Cached CMS data fetching with revalidation tags
-export const getCMSData = unstable_cache(
-  async () => {
-    // Now fetching from local data server
-    const [headerData, footerData, siteConfig] = await Promise.all([
-      fetchFromDataServer("/header"),
-      fetchFromDataServer("/footer"),
-      fetchFromDataServer("/global"),
-    ]);
+export const getHeaderData = async (): Promise<HeaderData> => {
+  const header = await fetchFromDataServer("/header");
+  return header;
+};
 
-    return {
-      header: headerData,
-      footer: footerData,
-      siteConfig: siteConfig,
-    };
-  },
-  ["cms-data"],
-  {
-    tags: ["cms"], // This tag allows us to revalidate all CMS content
-    revalidate: 3600, // Revalidate every hour as fallback
-  }
-);
+export const getFooterData = async (): Promise<FooterData> => {
+  const footer = await fetchFromDataServer("/footer");
+  return footer;
+};
 
-export const getHeaderData = unstable_cache(
-  async (): Promise<HeaderData> => {
-    const data = await getCMSData();
-    return data.header;
-  },
-  ["header-data"],
-  {
-    tags: ["cms", "header"], // Multiple tags for granular revalidation
-    revalidate: 3600,
-  }
-);
-
-export const getFooterData = unstable_cache(
-  async (): Promise<FooterData> => {
-    const data = await getCMSData();
-    return data.footer;
-  },
-  ["footer-data"],
-  {
-    tags: ["cms", "footer"], // Multiple tags for granular revalidation
-    revalidate: 3600,
-  }
-);
-
-export const getSiteConfig = unstable_cache(
-  async (): Promise<SiteConfig> => {
-    const data = await getCMSData();
-    return data.siteConfig;
-  },
-  ["site-config"],
-  {
-    tags: ["cms", "site-config"],
-    revalidate: 3600,
-  }
-);
+export const getSiteConfig = async (): Promise<SiteConfig> => {
+  const globalConfig = await fetchFromDataServer("/global");
+  return globalConfig;
+};
 
 // Utility function to check if CMS data is stale
 export function isCMSDataStale(

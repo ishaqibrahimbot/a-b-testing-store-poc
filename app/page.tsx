@@ -1,8 +1,5 @@
 import Link from "next/link";
-import { unstable_cache } from "next/cache";
-
-// Base URL for local data server
-const DATA_SERVER_URL = process.env.DATA_SERVER_URL || "http://localhost:3001";
+import { getAllProducts } from "@/lib/products";
 
 interface Product {
   id: string;
@@ -12,34 +9,9 @@ interface Product {
   category: string;
 }
 
-// Shared cached products data (same as product pages)
-const getProductsData = unstable_cache(
-  async () => {
-    const res = await fetch(`${DATA_SERVER_URL}/product`, {
-      cache: "force-cache", // Use cache for static generation
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch products");
-    }
-
-    return res.json();
-  },
-  ["products-data"],
-  {
-    tags: ["products"],
-    revalidate: 3600, // Cache for 1 hour
-  }
-);
-
-// Fetch products from data server
-async function getProducts() {
-  const data = await getProductsData();
-  return data.products;
-}
-
 export default async function Home() {
-  const products = await getProducts();
+  const data = await getAllProducts();
+  const products = data.products;
 
   return (
     <div className="min-h-screen bg-gray-50">

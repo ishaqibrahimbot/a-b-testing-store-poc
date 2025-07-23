@@ -6,8 +6,11 @@ const DATA_SERVER_URL = process.env.DATA_SERVER_URL || "http://localhost:3001";
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
-  // Only apply A/B testing to product pages
-  if (!request.nextUrl.pathname.startsWith("/product/")) {
+  // Only apply A/B testing to product pages (but not variant-b pages to avoid infinite redirects)
+  if (
+    !request.nextUrl.pathname.startsWith("/product/") ||
+    request.nextUrl.pathname.startsWith("/product/variant-b/")
+  ) {
     return response;
   }
 
@@ -23,38 +26,71 @@ export async function middleware(request: NextRequest) {
     }
 
     const abExperiments = await experimentsRes.json();
-    const experiment = abExperiments.experiments["add-to-cart-button"];
 
-    if (!experiment) {
-      return response;
+    // Handle layout experiment first (for URL rewriting)
+    const layoutExperiment = abExperiments.experiments["product-layout"];
+    if (layoutExperiment) {
+      const layoutCookieName = layoutExperiment.cookie_name;
+      let layoutVariant = request.cookies.get(layoutCookieName)?.value;
+
+      // If no cookie exists, assign a variant
+      if (!layoutVariant || !["A", "B"].includes(layoutVariant)) {
+        layoutVariant =
+          Math.random() < layoutExperiment.traffic_allocation / 100 ? "A" : "B";
+
+        // Set cookie with 30-day expiration
+        const cookieExpiration = new Date();
+        cookieExpiration.setDate(
+          cookieExpiration.getDate() + layoutExperiment.cookie_duration_days
+        );
+
+        response.cookies.set(layoutCookieName, layoutVariant, {
+          expires: cookieExpiration,
+          httpOnly: false,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+        });
+      }
+
+      // If user is on variant B, rewrite to variant-b path
+      if (layoutVariant === "B") {
+        const url = request.nextUrl.clone();
+        url.pathname = url.pathname.replace("/product/", "/product/variant-b/");
+        return NextResponse.rewrite(url);
+      }
+
+      // Add layout variant to response headers
+      response.headers.set("x-ab-layout-variant", layoutVariant);
     }
 
-    const cookieName = experiment.cookie_name;
+    // Handle button experiment
+    const buttonExperiment = abExperiments.experiments["add-to-cart-button"];
+    if (buttonExperiment) {
+      const buttonCookieName = buttonExperiment.cookie_name;
+      let buttonVariant = request.cookies.get(buttonCookieName)?.value;
 
-    // Check if user already has A/B test cookie
-    let variant = request.cookies.get(cookieName)?.value;
+      // If no cookie exists, assign a variant
+      if (!buttonVariant || !["A", "B"].includes(buttonVariant)) {
+        buttonVariant =
+          Math.random() < buttonExperiment.traffic_allocation / 100 ? "A" : "B";
 
-    // If no cookie exists, assign a variant
-    if (!variant || !["A", "B"].includes(variant)) {
-      // Simple 50/50 split based on traffic allocation
-      variant = Math.random() < experiment.traffic_allocation / 100 ? "A" : "B";
+        // Set cookie with 30-day expiration
+        const cookieExpiration = new Date();
+        cookieExpiration.setDate(
+          cookieExpiration.getDate() + buttonExperiment.cookie_duration_days
+        );
 
-      // Set cookie with 30-day expiration
-      const cookieExpiration = new Date();
-      cookieExpiration.setDate(
-        cookieExpiration.getDate() + experiment.cookie_duration_days
-      );
+        response.cookies.set(buttonCookieName, buttonVariant, {
+          expires: cookieExpiration,
+          httpOnly: false,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+        });
+      }
 
-      response.cookies.set(cookieName, variant, {
-        expires: cookieExpiration,
-        httpOnly: false, // Allow client-side access for analytics
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-      });
+      // Add button variant to response headers
+      response.headers.set("x-ab-variant", buttonVariant);
     }
-
-    // Add variant to response headers for server components
-    response.headers.set("x-ab-variant", variant);
 
     return response;
   } catch (error) {

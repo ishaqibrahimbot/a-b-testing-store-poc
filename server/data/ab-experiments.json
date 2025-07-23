@@ -22,6 +22,27 @@
       },
       "cookie_name": "ab_cart_button",
       "cookie_duration_days": 30
+    },
+    "product-layout": {
+      "id": "product-layout",
+      "name": "Product Page Layout Test",
+      "description": "Testing different product page layouts - default vs tile gallery",
+      "status": "active",
+      "traffic_allocation": 50,
+      "variants": {
+        "A": {
+          "name": "control",
+          "layout_type": "default",
+          "description": "Default layout with main image and thumbnail carousel"
+        },
+        "B": {
+          "name": "treatment",
+          "layout_type": "tiles",
+          "description": "Tile layout with equal-sized image grid"
+        }
+      },
+      "cookie_name": "ab_product_layout",
+      "cookie_duration_days": 30
     }
   }
 }

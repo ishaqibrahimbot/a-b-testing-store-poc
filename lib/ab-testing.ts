@@ -18,8 +18,9 @@ export interface ABExperiment {
 
 export interface ABVariantConfig {
   name: string;
-  button_color: string;
-  button_text: string;
+  button_color?: string;
+  button_text?: string;
+  layout_type?: string;
   description: string;
 }
 
@@ -28,9 +29,7 @@ const DATA_SERVER_URL = process.env.DATA_SERVER_URL || "http://localhost:3001";
 
 async function getExperiments() {
   try {
-    const res = await fetch(`${DATA_SERVER_URL}/experiments`, {
-      cache: "no-store",
-    });
+    const res = await fetch(`${DATA_SERVER_URL}/experiments`);
 
     if (!res.ok) {
       throw new Error(`Failed to fetch experiments: ${res.status}`);
@@ -101,6 +100,42 @@ export async function getVariantConfig(
 ): Promise<ABVariantConfig | null> {
   const experiment = await getExperiment(experimentId);
   return experiment?.variants[variant] || null;
+}
+
+export async function getLayoutVariant(): Promise<ABVariant> {
+  const abExperiments = await getExperiments();
+
+  if (!abExperiments) {
+    return "A"; // Default to control variant
+  }
+
+  const experiment = abExperiments.experiments[
+    "product-layout"
+  ] as ABExperiment;
+
+  if (!experiment) {
+    return "A"; // Default to control variant
+  }
+
+  // Try to get variant from headers first (set by middleware)
+  const headersList = await headers();
+  const variantFromHeader = headersList.get("x-ab-layout-variant") as ABVariant;
+
+  if (variantFromHeader && ["A", "B"].includes(variantFromHeader)) {
+    return variantFromHeader;
+  }
+
+  // Fallback: check cookies directly
+  const cookieStore = await cookies();
+  const variantFromCookie = cookieStore.get(experiment.cookie_name)
+    ?.value as ABVariant;
+
+  if (variantFromCookie && ["A", "B"].includes(variantFromCookie)) {
+    return variantFromCookie;
+  }
+
+  // Default fallback
+  return "A";
 }
 
 export async function getExperimentConfig(

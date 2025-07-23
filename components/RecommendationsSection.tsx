@@ -1,43 +1,8 @@
+import { fetchRecommendations } from "@/lib/products";
 import Image from "next/image";
 import Link from "next/link";
-
-interface RecommendedProduct {
-  id: string;
-  slug: string;
-  name: string;
-  image: string;
-  price: number;
-  originalPrice?: number;
-  currency: string;
-  rating: number;
-  reviewCount: number;
-}
-
-interface RecommendationsData {
-  recommendations: RecommendedProduct[];
-  lastUpdated: string;
-}
-
 interface RecommendationsSectionProps {
   slug: string;
-}
-
-async function fetchRecommendations(
-  slug: string
-): Promise<RecommendationsData> {
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
-
-  const res = await fetch(`${baseUrl}/api/products/${slug}/recommendations`, {
-    cache: "no-store", // Always fetch fresh data for PPR
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch recommendations");
-  }
-
-  return res.json();
 }
 
 export async function RecommendationsSection({

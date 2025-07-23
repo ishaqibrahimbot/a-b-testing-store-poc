@@ -1,33 +1,7 @@
+import { fetchAvailability } from "@/lib/products";
 import { getABVariant, getVariantConfig } from "../lib/ab-testing";
-
-interface AvailabilityData {
-  price: number;
-  originalPrice?: number;
-  currency: string;
-  stock: number;
-  isInStock: boolean;
-  stockLevel: "high" | "medium" | "low" | "out";
-  lastUpdated: string;
-}
-
 interface AvailabilitySectionProps {
   slug: string;
-}
-
-async function fetchAvailability(slug: string): Promise<AvailabilityData> {
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
-
-  const res = await fetch(`${baseUrl}/api/products/${slug}/availability`, {
-    cache: "no-store", // Always fetch fresh data for PPR
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch availability");
-  }
-
-  return res.json();
 }
 
 export async function AvailabilitySection({ slug }: AvailabilitySectionProps) {

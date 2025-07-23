@@ -1,21 +1,21 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 // import { unstable_cache } from "next/cache";
-import { ProductGallery } from "../../../components/ProductGallery";
-import { ProductInfo } from "../../../components/ProductInfo";
-import { ProductDescription } from "../../../components/ProductDescription";
-import { AvailabilitySection } from "../../../components/AvailabilitySection";
-import { RecommendationsSection } from "../../../components/RecommendationsSection";
-import { LoadingSkeleton } from "../../../components/LoadingSkeleton";
-import { getAllProducts, getProductBySlug, Product } from "@/lib/products";
+import { ProductGalleryTiles } from "../../../../components/ProductGalleryTiles";
+import { ProductInfo } from "../../../../components/ProductInfo";
+import { ProductDescription } from "../../../../components/ProductDescription";
+import { AvailabilitySection } from "../../../../components/AvailabilitySection";
+import { RecommendationsSection } from "../../../../components/RecommendationsSection";
+import { LoadingSkeleton } from "../../../../components/LoadingSkeleton";
+import { getProductBySlug } from "@/lib/products";
 
 // Generate static params for all products
-export async function generateStaticParams() {
-  const data = await getAllProducts();
-  return data.products.map((product: Product) => ({
-    slug: product.slug,
-  }));
-}
+// export async function generateStaticParams() {
+//   const data = await getProductsData();
+//   return data.products.map((product: Product) => ({
+//     slug: product.slug,
+//   }));
+// }
 
 export async function generateMetadata(props: {
   params: Promise<{ slug: string }>;
@@ -40,7 +40,7 @@ export async function generateMetadata(props: {
   };
 }
 
-export default async function ProductPage(props: {
+export default async function ProductPageVariantB(props: {
   params: Promise<{ slug: string }>;
 }) {
   const params = await props.params;
@@ -54,8 +54,8 @@ export default async function ProductPage(props: {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          {/* Static product gallery - pre-rendered */}
-          <ProductGallery images={product.images} name={product.name} />
+          {/* Tile-based product gallery - pre-rendered */}
+          <ProductGalleryTiles images={product.images} name={product.name} />
 
           <div className="space-y-6">
             {/* Static product info - pre-rendered */}

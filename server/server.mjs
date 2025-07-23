@@ -33,9 +33,6 @@ const loadJSONFile = (filename) => {
   }
 };
 
-const productsData = loadJSONFile("products.json");
-const abExperimentsData = loadJSONFile("ab-experiments.json");
-
 // Mock availability data (same as current API)
 const mockAvailabilityData = {
   "wireless-headphones": {
@@ -92,13 +89,12 @@ const mockRecommendationData = {
 
 // Simulate API delay
 const simulateDelay = () =>
-  new Promise((resolve) => setTimeout(resolve, 600 + Math.random() * 300));
+  new Promise((resolve) => setTimeout(resolve, 300 + Math.random() * 300));
 
 // Routes
 
 // /footer -> serves the footer data
 app.get("/footer", (req, res) => {
-  console.log("Serving footer data");
   const cmsData = loadJSONFile("cms.json");
   if (!cmsData || !cmsData.footer) {
     return res.status(500).json({ error: "Footer data not available" });
@@ -108,7 +104,6 @@ app.get("/footer", (req, res) => {
 
 // /header -> serves the header data
 app.get("/header", (req, res) => {
-  console.log("Serving header data");
   const cmsData = loadJSONFile("cms.json");
   if (!cmsData || !cmsData.header) {
     return res.status(500).json({ error: "Header data not available" });
@@ -118,7 +113,6 @@ app.get("/header", (req, res) => {
 
 // /global -> serves the global header data (site config)
 app.get("/global", (req, res) => {
-  console.log("Serving global site config data");
   const cmsData = loadJSONFile("cms.json");
   if (!cmsData || !cmsData.siteConfig) {
     return res.status(500).json({ error: "Site config data not available" });
@@ -128,17 +122,34 @@ app.get("/global", (req, res) => {
 
 // /product -> serves the product data
 app.get("/product", (req, res) => {
-  console.log("Serving all products data");
+  const productsData = loadJSONFile("products.json");
   if (!productsData) {
     return res.status(500).json({ error: "Products data not available" });
   }
   res.json(productsData);
 });
 
+// /product/:slug -> serves a specific product's data
+app.get("/product/:slug", (req, res) => {
+  const { slug } = req.params;
+  const productsData = loadJSONFile("products.json");
+
+  if (!productsData || !productsData.products) {
+    return res.status(500).json({ error: "Products data not available" });
+  }
+
+  const product = productsData.products.find((p) => p.slug === slug);
+
+  if (!product) {
+    return res.status(404).json({ error: "Product not found" });
+  }
+
+  res.json(product);
+});
+
 // /product/availability -> serves the availability data
-app.get("/product/availability", async (req, res) => {
-  const { slug } = req.query;
-  console.log(`Serving availability data for product: ${slug}`);
+app.get("/product/:slug/availability", async (req, res) => {
+  const { slug } = req.params;
 
   if (!slug) {
     return res.status(400).json({ error: "Product slug is required" });
@@ -176,9 +187,8 @@ app.get("/product/availability", async (req, res) => {
 });
 
 // /product/recommendations -> serves recommended products
-app.get("/product/recommendations", async (req, res) => {
-  const { slug } = req.query;
-  console.log(`Serving recommendations for product: ${slug}`);
+app.get("/product/:slug/recommendations", async (req, res) => {
+  const { slug } = req.params;
 
   if (!slug) {
     return res.status(400).json({ error: "Product slug is required" });
@@ -186,6 +196,8 @@ app.get("/product/recommendations", async (req, res) => {
 
   // Simulate API delay
   await simulateDelay();
+
+  const productsData = loadJSONFile("products.json");
 
   if (!productsData || !productsData.recommendations) {
     return res
@@ -230,7 +242,7 @@ app.get("/product/recommendations", async (req, res) => {
 
 // /experiments -> serves the A/B experiments data
 app.get("/experiments", (req, res) => {
-  console.log("Serving A/B experiments data");
+  const abExperimentsData = loadJSONFile("ab-experiments.json");
   if (!abExperimentsData) {
     return res.status(500).json({ error: "Experiments data not available" });
   }
@@ -250,6 +262,7 @@ app.listen(PORT, () => {
   console.log("  GET /header - Header data");
   console.log("  GET /global - Global site config");
   console.log("  GET /product - All products data");
+  console.log("  GET /product/<slug> - Specific product data");
   console.log(
     "  GET /product/availability?slug=<product-slug> - Product availability"
   );
