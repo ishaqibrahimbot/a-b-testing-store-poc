@@ -39,39 +39,15 @@ jobs:
 
           echo "head_ref=$HEAD_REF_CLEAN" >> $GITHUB_OUTPUT
 
-      - name: Verify head environment exists
-        id: verify-env
-        run: |
-          set -e
-          if ! contentful space environment get \
-            --space-id ${{ secrets.CONTENTFUL_SPACE_ID }} \
-            --management-token ${{ secrets.CONTENTFUL_MANAGEMENT_TOKEN }} \
-            --environment-id ${{ steps.refs.outputs.head_ref }} >/dev/null 2>&1; then
-            echo "Head environment '${{ steps.refs.outputs.head_ref }}' not found in Contentful." >&2
-            exit 1
-          fi
-
-      - name: Read current alias target
-        id: current-alias
-        run: |
-          contentful space environment alias get \
-            --space-id ${{ secrets.CONTENTFUL_SPACE_ID }} \
-            --management-token ${{ secrets.CONTENTFUL_MANAGEMENT_TOKEN }} \
-            --alias-id master > current_alias.txt 2>&1 || true
-
-          echo "current_alias<<EOF" >> $GITHUB_OUTPUT
-          cat current_alias.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
       - name: Update master alias to head environment
         id: update-alias
         run: |
           set -e
-          OUTPUT=$(contentful space environment alias update \
+          OUTPUT=$(contentful space environment-alias update \
             --space-id ${{ secrets.CONTENTFUL_SPACE_ID }} \
             --management-token ${{ secrets.CONTENTFUL_MANAGEMENT_TOKEN }} \
             --alias-id master \
-            --environment-id ${{ steps.refs.outputs.head_ref }} 2>&1)
+            --target-environment-id ${{ steps.refs.outputs.head_ref }} 2>&1)
 
           echo "$OUTPUT" > update_alias.txt
 
@@ -84,22 +60,12 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            let current = '';
             let update = '';
-            try { current = fs.readFileSync('current_alias.txt', 'utf8'); } catch {}
             try { update = fs.readFileSync('update_alias.txt', 'utf8'); } catch {}
             const headRef = '${{ steps.refs.outputs.head_ref }}';
             const commentBody = `## 🔁 Contentful Master Alias Updated
 
             **New target**: \`${headRef}\`
-
-            <details>
-            <summary>Previous alias info</summary>
-
-            \`\`\`
-            ${current || 'N/A'}
-            \`\`\`
-            </details>
 
             <details>
             <summary>Update command output</summary>
