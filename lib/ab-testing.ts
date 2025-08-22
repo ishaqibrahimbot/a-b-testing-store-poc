@@ -28,18 +28,13 @@ export interface ABVariantConfig {
 const DATA_SERVER_URL = process.env.DATA_SERVER_URL || "http://localhost:3001";
 
 async function getExperiments() {
-  try {
-    const res = await fetch(`${DATA_SERVER_URL}/experiments`);
+  const res = await fetch(`${DATA_SERVER_URL}/experiments`);
 
-    if (!res.ok) {
-      throw new Error(`Failed to fetch experiments: ${res.status}`);
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching experiments:", error);
-    return null;
+  if (!res.ok) {
+    throw new Error(`Failed to fetch experiments: ${res.status}`);
   }
+
+  return await res.json();
 }
 
 export async function getABVariant(experimentId: string): Promise<ABVariant> {

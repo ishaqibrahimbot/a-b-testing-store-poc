@@ -3,6 +3,16 @@ import cors from "cors";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+import {
+  getSiteConfiguration,
+  getHeaderConfiguration,
+  getFooterConfiguration,
+  healthCheck,
+} from "./services/contentful.mjs";
+
+// Load environment variables
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,7 +27,7 @@ app.use(express.json());
 // Logging middleware
 app.use((req, res, next) => {
   const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] ${req.method} ${req.path} - Request received`);
+  console.log(`[${timestamp}] ${req.method} ${req.path}\n`);
   next();
 });
 
@@ -94,30 +104,36 @@ const simulateDelay = () =>
 // Routes
 
 // /footer -> serves the footer data
-app.get("/footer", (req, res) => {
-  const cmsData = loadJSONFile("cms.json");
-  if (!cmsData || !cmsData.footer) {
-    return res.status(500).json({ error: "Footer data not available" });
+app.get("/footer", async (req, res) => {
+  try {
+    const footerData = await getFooterConfiguration();
+    res.json(footerData);
+  } catch (error) {
+    console.error("Error fetching footer data:", error);
+    res.status(500).json({ error: "Footer data not available" });
   }
-  res.json(cmsData.footer);
 });
 
 // /header -> serves the header data
-app.get("/header", (req, res) => {
-  const cmsData = loadJSONFile("cms.json");
-  if (!cmsData || !cmsData.header) {
-    return res.status(500).json({ error: "Header data not available" });
+app.get("/header", async (req, res) => {
+  try {
+    const headerData = await getHeaderConfiguration();
+    res.json(headerData);
+  } catch (error) {
+    console.error("Error fetching header data:", error);
+    res.status(500).json({ error: "Header data not available" });
   }
-  res.json(cmsData.header);
 });
 
 // /global -> serves the global header data (site config)
-app.get("/global", (req, res) => {
-  const cmsData = loadJSONFile("cms.json");
-  if (!cmsData || !cmsData.siteConfig) {
-    return res.status(500).json({ error: "Site config data not available" });
+app.get("/global", async (req, res) => {
+  try {
+    const siteConfigData = await getSiteConfiguration();
+    res.json(siteConfigData);
+  } catch (error) {
+    console.error("Error fetching site config data:", error);
+    res.status(500).json({ error: "Site config data not available" });
   }
-  res.json(cmsData.siteConfig);
 });
 
 // /product -> serves the product data
@@ -250,17 +266,22 @@ app.get("/experiments", (req, res) => {
 });
 
 // Health check endpoint
-app.get("/health", (req, res) => {
-  res.json({ status: "OK", timestamp: new Date().toISOString() });
+app.get("/health", async (req, res) => {
+  const contentfulHealth = await healthCheck();
+  res.json({
+    status: "OK",
+    timestamp: new Date().toISOString(),
+    contentful: contentfulHealth,
+  });
 });
 
 // Start server
 app.listen(PORT, () => {
   console.log(`Data server running on http://localhost:${PORT}`);
   console.log("Available endpoints:");
-  console.log("  GET /footer - Footer data");
-  console.log("  GET /header - Header data");
-  console.log("  GET /global - Global site config");
+  console.log("  GET /footer - Footer data (from Contentful)");
+  console.log("  GET /header - Header data (from Contentful)");
+  console.log("  GET /global - Global site config (from Contentful)");
   console.log("  GET /product - All products data");
   console.log("  GET /product/<slug> - Specific product data");
   console.log(
@@ -270,5 +291,5 @@ app.listen(PORT, () => {
     "  GET /product/recommendations?slug=<product-slug> - Product recommendations"
   );
   console.log("  GET /experiments - A/B testing experiments");
-  console.log("  GET /health - Health check");
+  console.log("  GET /health - Health check (includes Contentful status)");
 });

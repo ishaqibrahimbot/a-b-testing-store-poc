@@ -1,4 +1,4 @@
-const DATA_SERVER_URL = "http://localhost:3001";
+const DATA_SERVER_URL = process.env.DATA_SERVER_URL || "http://localhost:3001";
 
 export interface Product {
   id: string;
@@ -39,7 +39,9 @@ interface RecommendationsData {
 }
 
 export async function getAllProducts() {
-  const response = await fetch(`${DATA_SERVER_URL}/product`);
+  const response = await fetch(`${DATA_SERVER_URL}/product`, {
+    cache: "force-cache",
+  });
 
   if (!response.ok) {
     throw new Error("Failed to fetch products");
@@ -49,7 +51,9 @@ export async function getAllProducts() {
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const response = await fetch(`${DATA_SERVER_URL}/product/${slug}`);
+  const response = await fetch(`${DATA_SERVER_URL}/product/${slug}`, {
+    cache: "force-cache",
+  });
 
   if (response.ok) {
     return response.json();

@@ -1,5 +1,6 @@
 import { fetchAvailability } from "@/lib/products";
 import { getABVariant, getVariantConfig } from "../lib/ab-testing";
+import { QuantitySelector } from "./QuantitySelector";
 interface AvailabilitySectionProps {
   slug: string;
 }
@@ -67,6 +68,8 @@ export async function AvailabilitySection({ slug }: AvailabilitySectionProps) {
             </p>
           )}
         </div>
+
+        <QuantitySelector />
 
         {/* A/B Tested Add to Cart Button */}
         <button

@@ -56,8 +56,13 @@ export interface SiteConfig {
 const DATA_SERVER_URL = process.env.DATA_SERVER_URL || "http://localhost:3001";
 
 // Utility function to fetch from data server
-async function fetchFromDataServer(endpoint: string) {
-  const res = await fetch(`${DATA_SERVER_URL}${endpoint}`);
+async function fetchFromDataServer(endpoint: string, tag: string) {
+  const res = await fetch(`${DATA_SERVER_URL}${endpoint}`, {
+    next: {
+      tags: [tag],
+    },
+    cache: "force-cache",
+  });
 
   if (!res.ok) {
     throw new Error(`Failed to fetch from data server: ${endpoint}`);
@@ -67,17 +72,17 @@ async function fetchFromDataServer(endpoint: string) {
 }
 
 export const getHeaderData = async (): Promise<HeaderData> => {
-  const header = await fetchFromDataServer("/header");
+  const header = await fetchFromDataServer("/header", "header");
   return header;
 };
 
 export const getFooterData = async (): Promise<FooterData> => {
-  const footer = await fetchFromDataServer("/footer");
+  const footer = await fetchFromDataServer("/footer", "footer");
   return footer;
 };
 
 export const getSiteConfig = async (): Promise<SiteConfig> => {
-  const globalConfig = await fetchFromDataServer("/global");
+  const globalConfig = await fetchFromDataServer("/global", "global");
   return globalConfig;
 };
 

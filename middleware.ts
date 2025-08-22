@@ -16,9 +16,7 @@ export async function middleware(request: NextRequest) {
 
   try {
     // Fetch experiments data from server
-    const experimentsRes = await fetch(`${DATA_SERVER_URL}/experiments`, {
-      cache: "no-store",
-    });
+    const experimentsRes = await fetch(`${DATA_SERVER_URL}/experiments`);
 
     if (!experimentsRes.ok) {
       console.error("Failed to fetch experiments data");
