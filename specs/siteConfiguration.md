@@ -25,3 +25,9 @@ Description: Global site configuration including name, logo, and tagline
    type: Long text
    optional
    validations: max length 200
+
+5. Tagline V2
+   id: taglineV2
+   type: Short Text
+   optional
+   validations: max length 300

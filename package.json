@@ -6,10 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "new": "node ./scripts/create-environment.js"
   },
   "dependencies": {
     "@xstate/react": "^6.0.0",
+    "contentful-management": "^11.54.4",
+    "git-branch": "^2.0.1",
     "next": "^15.4.2-canary.12",
     "react": "19.1.0",
     "react-dom": "19.1.0",

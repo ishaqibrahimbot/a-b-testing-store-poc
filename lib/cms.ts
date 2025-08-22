@@ -49,6 +49,7 @@ export interface SiteConfig {
     image: string | null;
   };
   tagline: string;
+  taglineV2: string;
   lastUpdated: string;
 }
 
