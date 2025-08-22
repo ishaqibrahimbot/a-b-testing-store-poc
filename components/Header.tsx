@@ -15,6 +15,7 @@ export function Header({ siteConfig, headerData }: HeaderProps) {
             <Link href="/" className="text-2xl font-bold text-gray-900">
               {siteConfig.logo.text}
             </Link>
+            <p>{siteConfig?.taglineV2}</p>
           </div>
 
           <nav className="hidden md:flex space-x-8">

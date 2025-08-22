@@ -1,0 +1,24 @@
+---
+description: guidelines on contentful mcp tool usage
+alwaysApply: false
+---
+
+Whenever this file is invoked, you are supposed to run the following "Content Model Create/Update Workflow"
+
+- the `/specs` folder contains specification files for every content model in contentful for our application
+- run the terminal command `git status specs/` to check which content models are (1) newly added (2) modified, make a list of each
+
+For files that have been newly added:
+
+- use the `create_content_type` tool to create a content type based on each spec file
+- to create a content type using the `create_content_type` tool, first prepare the payload config object by reviewing the spec. IMPORTANT: make sure to follow the spec exactly!
+- once the content type has been created, publish the content type using the `publish_content_type` tool
+- finally, use the `get_content_type` tool to fetch the created content type and verify that it was created successfully. verify by comparing the output of the `get_content_type` tool with what the spec says.
+
+For files that have been modified:
+
+- run `git diff specs/{filename}` to see the exact changes made
+- based on the output of the above command, use the `update_content_type` tool to update that content type
+- first prepare the payload carefully to make sure you follow EXACTLY the changes made to the spec file
+- once the content type has been updated, publish the content type using the `publish_content_type` tool
+- finally, use the `get_content_type` tool to fetch the updated content type and verify that it was updated successfully. verify by comparing the output of the `get_content_type` tool with what the spec says.
