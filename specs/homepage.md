@@ -14,3 +14,10 @@ Description: Stores all the content blocks that are rendered on the homepage of 
    optional
    localised
    validations: max length 20
+
+3. Image Carousel
+   id: imageCarousel
+   type: Array
+   items: Asset
+   optional
+   validations: min 3, max 8
